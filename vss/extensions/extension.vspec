@@ -1,0 +1,30 @@
+#
+# Copyright 2023 Volvo Car Corporation
+#
+# Overlay to extend signals targetting Volvo Android Infotainment systems
+# Dependencies to other overlays: None
+# Known conflicts with other overlays: None
+#
+Vehicle:
+  type: branch
+
+Vehicle.Cabin.Infotainment.HMI:
+    type: branch
+
+Vehicle.Cabin.Infotainment.HMI.TurnSignalState:
+  datatype: string
+  type: actuator
+  allowed: ['LEFT', 'RIGHT', 'NONE']
+  description: Turn signal state
+
+Vehicle.Cabin.Infotainment.HMI.DisplaySpeedUnit:
+  datatype: string
+  type: actuator
+  allowed: ['KMPH', 'MPH']
+  description: Display Speed unit
+
+Vehicle.Cabin.Infotainment.HMI.DisplaySpeed:
+  datatype: float
+  type: sensor
+  unit: m/s
+  description: Display Speed
