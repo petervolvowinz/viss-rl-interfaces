@@ -1,4 +1,4 @@
-module viss-rl-interfaces
+module github.com/petervolvowinz/viss-rl-interfaces
 
 go 1.18
 
