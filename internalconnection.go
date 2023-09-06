@@ -5,11 +5,11 @@ package viss_rl_interfaces
 import (
 	"errors"
 	"fmt"
+	"github.com/petervolvowinz/viss-rl-interfaces/base"
+	"github.com/petervolvowinz/viss-rl-interfaces/broker"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"sync"
-	"viss-rl-interfaces/broker"
-	base "viss-rl-interfaces/proto_files"
 )
 
 type InternalConnection struct {

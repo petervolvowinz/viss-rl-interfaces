@@ -5,10 +5,10 @@ package broker
 import (
 	"context"
 	"fmt"
+	"github.com/petervolvowinz/viss-rl-interfaces/base"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	base "viss-rl-interfaces/proto_files"
 )
 
 // print current configuration to the console

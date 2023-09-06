@@ -8,6 +8,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	base "github.com/petervolvowinz/viss-rl-interfaces/base"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -16,7 +17,6 @@ import (
 	"net"
 	"os"
 	"sync"
-	base "viss-rl-interfaces/proto_files"
 )
 
 type Configuration struct {

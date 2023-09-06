@@ -2,6 +2,9 @@ module github.com/petervolvowinz/viss-rl-interfaces
 
 go 1.18
 
+replace github.com/petervolvowinz/viss-rl-interfaces/broker => ./broker
+replace github.com/petervolvowinz/viss-rl-interfaces/proto_files => ./base
+
 require (
 	github.com/sirupsen/logrus v1.9.3
 	google.golang.org/grpc v1.57.0
