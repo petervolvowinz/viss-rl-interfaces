@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-//VSS Signal Cache
+//VSS Signal Cache. uses a key value map to store values.
 type SignalAPI interface {
 	// returns true if the signal is stored in the cache
 	GetSignalValue(id string) (bool, any)
@@ -15,7 +15,7 @@ type SignalAPI interface {
 	Start(quitSignal chan struct{}) error
 }
 
-var apiInstance *InternalConnection
+var sigapiInstance *InternalConnection
 var singletonlock = &sync.Mutex{}
 
 /**
@@ -23,12 +23,12 @@ Return a singelton instance of the signal api
 */
 func getSignalApiInstance() *InternalConnection {
 
-	if apiInstance == nil {
+	if sigapiInstance == nil {
 		singletonlock.Lock()
 		defer singletonlock.Unlock()
-		if apiInstance == nil {
+		if sigapiInstance == nil {
 			log.Debug("Creating single instance now.")
-			apiInstance = &InternalConnection{
+			sigapiInstance = &InternalConnection{
 				signalcache: make(map[string]any, 100),
 			}
 		} else {
@@ -38,9 +38,42 @@ func getSignalApiInstance() *InternalConnection {
 		log.Debug("Single instance already created.")
 	}
 
-	return apiInstance
+	return sigapiInstance
 }
 
 func GetSignalApi() (api SignalAPI) {
 	return getSignalApiInstance()
+}
+
+//VSS broker relay API. channel reader writer api. Does not cache an\y values.
+type SignalListenerAPI interface {
+	WriterReader(quitSignal chan struct{}, writer chan ValueChannel, reader chan ValueChannel) error
+}
+
+var sigapiListenerInstance *InternalConnection_WR
+var singletonListenerlock = &sync.Mutex{}
+
+/**
+Return a singelton instance of the signal api
+*/
+func getWriReadSignalApiInstance() *InternalConnection_WR {
+
+	if sigapiListenerInstance == nil {
+		singletonListenerlock.Lock()
+		defer singletonListenerlock.Unlock()
+		if sigapiListenerInstance == nil {
+			log.Debug("Creating single instance now.")
+			sigapiListenerInstance = &InternalConnection_WR{}
+		} else {
+			log.Debug("Single instance already created.")
+		}
+	} else {
+		log.Debug("Single instance already created.")
+	}
+
+	return sigapiListenerInstance
+}
+
+func GetWriterReaderlApi() (api SignalListenerAPI) {
+	return getWriReadSignalApiInstance()
 }

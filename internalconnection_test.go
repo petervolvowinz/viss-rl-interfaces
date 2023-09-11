@@ -7,12 +7,13 @@ import (
 	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"testing"
 	"time"
 )
 
-func TestStreaming(t *testing.T) {
+func TestSignalApiStreaming(t *testing.T) {
 	api := GetSignalApi()
 
 	streamQuitSignal := make(chan struct{}, 1)
@@ -76,4 +77,75 @@ func TestStreaming(t *testing.T) {
 
 	os.Exit(<-ch | <-ch)
 
+}
+
+// Test function that listens to the stream...
+func listenToDataChannel(dataChannel chan ValueChannel) {
+	for {
+		dataValue := <-dataChannel
+		switch dataValue.Value.(type) {
+		case float64:
+			str := strconv.FormatFloat(dataValue.Value.(float64), 'f', -1, 64)
+			fmt.Println(dataValue.Name + " = " + str)
+		case int64:
+			str := strconv.FormatInt(dataValue.Value.(int64), 10)
+			fmt.Println(dataValue.Name + " = " + str)
+		case bool:
+			str := strconv.FormatBool(dataValue.Value.(bool))
+			fmt.Println(dataValue.Name + " = " + str)
+		case []byte:
+			fmt.Println(dataValue.Name + " = " + string(dataValue.Value.([]byte)))
+		}
+	}
+}
+
+func TestWriterReader(t *testing.T) {
+
+	wr_api := GetWriterReaderlApi()
+
+	readQuitSignal := make(chan struct{}, 1)
+	streamQuitSignal := make(chan struct{}, 1)
+	writerChannel := make(chan ValueChannel, 1)
+	readerChannel := make(chan ValueChannel, 1)
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, os.Kill, syscall.SIGTERM) // listen to OS interrupt, like ctrl-c
+	go func() {
+		<-sig
+		close(streamQuitSignal)
+		close(readQuitSignal)
+	}()
+
+	ch := make(chan int, 2)
+
+	go func() {
+		err := wr_api.WriterReader(streamQuitSignal, writerChannel, readerChannel)
+		if err != nil {
+			log.Println(err)
+			ch <- 1
+		}
+		close(readQuitSignal)
+		log.Println("subscribing is done")
+		ch <- 0
+	}()
+
+	// writing values to the broker every 3 seconds...
+	go func() {
+		for {
+			val := &ValueChannel{
+				Name:  "Vehicle.Some.Signal",
+				Value: int64(100),
+			}
+			writerChannel <- *val
+			time.Sleep(time.Second * 3)
+		}
+	}()
+
+	go func() {
+		for {
+			listenToDataChannel(readerChannel)
+		}
+	}()
+
+	os.Exit(<-ch)
 }

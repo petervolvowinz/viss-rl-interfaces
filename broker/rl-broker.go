@@ -183,6 +183,7 @@ func GetBrokerConnection() (base.NetworkServiceClient, *GRPCBrokerSettings, erro
 	grpc_settings := getGRPCBrokerSettingInstance().SetCredsApiMetadata()
 	conn, err := grpc.Dial(grpc_settings.Uri, grpc.WithTransportCredentials(grpc_settings.Creds))
 	c := base.NewNetworkServiceClient(conn)
+
 	if err != nil {
 		log.Debug("did not connect to broker", err)
 		return nil, nil, err
