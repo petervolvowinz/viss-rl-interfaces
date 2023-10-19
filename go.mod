@@ -3,6 +3,7 @@ module github.com/petervolvowinz/viss-rl-interfaces
 go 1.18
 
 replace github.com/petervolvowinz/viss-rl-interfaces/broker => ./broker
+
 replace github.com/petervolvowinz/viss-rl-interfaces/proto_files => ./base
 
 require (

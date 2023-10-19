@@ -20,6 +20,7 @@ import (
 )
 
 type Configuration struct {
+	Tls          string   `json:"tls"`
 	CertPathName string   `json:"cert_path_name"`
 	NameSpaces   []string `json:"name_spaces"`
 	BrokerUrl    string   `json:"broker_url"`
@@ -76,9 +77,38 @@ type settings struct {
 	Namespaces []spaces `json:namespaces`
 }
 
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
+func findCertificates() string {
+	var certFiles = []string{
+		"/etc/ssl/certs/ca-certificates.crt",                // Debian/Ubuntu/Gentoo etc.
+		"/etc/pki/tls/certs/ca-bundle.crt",                  // Fedora/RHEL 6
+		"/etc/ssl/ca-bundle.pem",                            // OpenSUSE
+		"/etc/pki/tls/cacert.pem",                           // OpenELEC
+		"/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem", // CentOS/RHEL 7
+		"/etc/ssl/cert.pem",                                 // Alpine Linux
+	}
+
+	for _, file := range certFiles {
+		if fileExists(file) {
+			return file
+		}
+	}
+	return getGRPCBrokerSettingInstance().conf.CertPathName
+}
+
 func loadTLSCredentials() (credentials.TransportCredentials, error) {
 	// Load certificate of the CA who signed server's certificate
-	pemServerCA, err := ioutil.ReadFile("certificate.pem")
+	certfilename := findCertificates()
+	log.Info("gRPC tls file cert ", certfilename)
+
+	pemServerCA, err := ioutil.ReadFile(certfilename)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +182,19 @@ func readConfiguration() Configuration {
 func (settings *GRPCBrokerSettings) SetCredsApiMetadata() *GRPCBrokerSettings {
 
 	conf := readConfiguration()
-	creds, _ := loadTLSCredentials()
+	var creds credentials.TransportCredentials = nil
+	if conf.Tls == "yes" {
+		creds, _ = loadTLSCredentials()
+		if creds == nil {
+			log.Info("could not create tls credentials, trying with insecure")
+		}
+	}
+	if creds == nil || conf.Tls == "no" {
+		creds = credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+		})
+	}
+
 	uri := net.JoinHostPort(conf.BrokerUrl, conf.Port)
 	md := metadata.Pairs(
 		"x-api-key", conf.ApiKey,
@@ -174,9 +216,14 @@ func SeverConfig() error {
 		log.Debug("did not connect ", err)
 		return err
 	}
-	defer conn.Close()
 
-	return PrintSignalTree(conn)
+	err = PrintSignalTree(conn, settings.Md)
+	if err != nil {
+		log.Debug("could not print config ", err)
+		return err
+	}
+	conn.Close()
+	return nil
 }
 
 func GetBrokerConnection() (base.NetworkServiceClient, *GRPCBrokerSettings, error) {

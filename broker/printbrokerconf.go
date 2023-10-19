@@ -12,11 +12,8 @@ import (
 )
 
 // print current configuration to the console
-func PrintSignalTree(clientconnection *grpc.ClientConn) error {
+func PrintSignalTree(clientconnection *grpc.ClientConn, md metadata.MD) error {
 	systemServiceClient := base.NewSystemServiceClient(clientconnection)
-	md := metadata.Pairs(
-		"x-api-key", "abcdefg",
-	)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	configuration, err := systemServiceClient.GetConfiguration(ctx, &base.Empty{})
 

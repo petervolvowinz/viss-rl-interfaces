@@ -44,15 +44,15 @@ func TestSignalApiStreaming(t *testing.T) {
 	// Check values and print em to console
 	go func() {
 		for {
-			ok, VIN := api.GetSignalValue("Vehicle.VehicleIdentification.VIN")
+			ok, value := api.GetSignalValue("Vehicle.CurrentLocation.Latitude")
 			if !ok {
-				t.Error("VIN not registrered")
+				t.Error("Lat not registrered")
 			} else {
-				vin_as_str := string(VIN.([]byte))
-				log.Println("VIN IS", vin_as_str)
+				val := value.(float64)
+				log.Println("LAT IS", val)
 			}
 
-			ok, value := api.GetSignalValue("Vehicle.Speed")
+			ok, value = api.GetSignalValue("Vehicle.Speed")
 			if !ok {
 				log.Println("speed not registered")
 				close(streamQuitSignal)

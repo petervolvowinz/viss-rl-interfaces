@@ -4,9 +4,9 @@ package broker
 
 import (
 	"fmt"
+	"github.com/petervolvowinz/viss-rl-interfaces/base"
 	log "github.com/sirupsen/logrus"
 	"testing"
-	base "viss-rl-interfaces/proto_files"
 )
 
 func TestBrokerInfo(t *testing.T) {
