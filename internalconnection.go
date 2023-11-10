@@ -53,12 +53,17 @@ func (IC *InternalConnection) SetSignalValue(id string, value any) {
 // Interfaces RL signal broker, assumes data is VSS enabled.
 // blocking on quitSignal
 func (IC *InternalConnection) Start(quitSignal chan struct{}) error {
-	resp, err := broker.StartStreaming()
+
+	subscriber, _, settings, error := broker.GetBrokerConnections()
+	if error != nil {
+		return error
+	}
+
+	resp, err := broker.StartStreaming(subscriber, settings)
 	if err != nil {
 		log.Debug(err)
 		return err
 	}
-
 	for {
 		sigs, err := resp.Recv()
 		if err != nil {
@@ -102,22 +107,70 @@ func (IC *InternalConnection) Start(quitSignal chan struct{}) error {
 	return nil
 }
 
-func writeToBroker(writer chan ValueChannel) {
+/*
+void GrpcConnection::publisher()
+{
+
+  // TODO we could use startvalue here as default
+  // https://github.com/remotivelabs/remotivelabs-apis/blob/main/proto/common.proto#L34
+  auto start_value = 12;
+
+  auto N = 10;
+  for (auto i = 0; i < N; i = ((i + 1) % N))
+  {
+    // std::cout << i << std::endl;
+    auto signals = new Signals();
+    {
+      auto signal_id = new SignalId();
+      signal_id->set_allocated_name(new std::string("SteeringAngle129"));
+      signal_id->set_allocated_namespace_(new NameSpace(*name_space));
+      auto handle = signals->add_signal();
+      handle->set_allocated_id(signal_id);
+      handle->set_integer(start_value + i);
+    }
+    {
+      // append any number of signals here! (duplicate above code)
+    }
+
+    PublisherConfig pub_info;
+    pub_info.set_allocated_clientid(new ClientId(*source));
+    pub_info.set_allocated_signals(signals);
+    pub_info.set_frequency(0);
+    ClientContext ctx;
+    Empty empty;
+    stub->PublishSignals(&ctx, pub_info, &empty);
+
+    // TODO we should derive this period from proto buffer,
+    // https://github.com/remotivelabs/remotivelabs-apis/blob/main/proto/common.proto#L33
+    usleep(30);
+  }
+}
+
+*/
+func writeToBroker(writer chan ValueChannel, serviceClient base.NetworkServiceClient, settings *broker.GRPCBrokerSettings) {
+
 	for {
 		dataValue := <-writer
-		log.Println("***** TODO writing signals to broker *****")
-		log.Println(dataValue.Name)
+		log.Debug("publishing signal ", dataValue.Name)
+		broker.PublishSignals(dataValue.Name, dataValue.Value, settings.Conf.NameSpaces[0], serviceClient)
 	}
 }
 
 func (IC *InternalConnection_WR) WriterReader(quitSignal chan struct{}, writer chan ValueChannel, reader chan ValueChannel) error {
-	resp, err := broker.StartStreaming()
+
+	subscriber, publisher, settings, error := broker.GetBrokerConnections()
+	if error != nil {
+		return error
+	}
+
+	resp, err := broker.StartStreaming(subscriber, settings)
 	if err != nil {
 		log.Debug(err)
 		return err
 	}
 
-	go writeToBroker(writer)
+	//publisher...
+	go writeToBroker(writer, publisher, settings)
 
 	for {
 		sigs, err := resp.Recv()

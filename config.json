@@ -7,5 +7,8 @@
   "client_id" : "volvo-go-client",
   "api_key": "0FCA4B4F-1BA28F2E-22087E87-DE46F2B1",
   "vss_tree_path": "../vss/vss-flat-json/normalized-json/vss_n.json",
-  "signalfilter": ["Vehicle.Speed","Vehicle.CurrentLocation.Latitude","Vehicle.CurrentLocation.Longitude"]
+  "signalfilter": ["Vehicle.Speed","Vehicle.CurrentLocation.Latitude","Vehicle.CurrentLocation.Longitude"],
+  "publish-separate-connection": "false",
+  "publish_url": "",
+  "publish_api-key": ""
 }

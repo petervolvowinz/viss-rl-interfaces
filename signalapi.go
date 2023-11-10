@@ -54,7 +54,7 @@ var sigapiListenerInstance *InternalConnection_WR
 var singletonListenerlock = &sync.Mutex{}
 
 /**
-Return a singelton instance of the signal api
+Return a singelton instance of the broker relay api
 */
 func getWriReadSignalApiInstance() *InternalConnection_WR {
 
