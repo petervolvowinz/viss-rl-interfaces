@@ -41,6 +41,7 @@ func (IC *InternalConnection) GetSignalValue(id string) (bool, any) {
 	return true, value
 }
 
+//TODO Implementation pending...
 func (IC *InternalConnection) SetSignalValue(id string, value any) {
 	IC.mx.Lock()
 	defer IC.mx.Unlock()

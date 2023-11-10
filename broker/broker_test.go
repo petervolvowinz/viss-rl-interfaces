@@ -7,6 +7,7 @@ import (
 	"github.com/petervolvowinz/viss-rl-interfaces/base"
 	log "github.com/sirupsen/logrus"
 	"testing"
+	"time"
 )
 
 func TestBrokerInfo(t *testing.T) {
@@ -18,7 +19,13 @@ func TestBrokerInfo(t *testing.T) {
 }
 
 func TestStreaming(t *testing.T) {
-	resp, err := StartStreaming()
+
+	subscriber, _, settings, error := GetBrokerConnections()
+	if error != nil {
+		t.Error(error)
+	}
+
+	resp, err := StartStreaming(subscriber, settings)
 	if err != nil {
 		t.Error(err)
 	}
@@ -40,4 +47,35 @@ func TestStreaming(t *testing.T) {
 		}
 
 	}
+}
+
+type valueChannel struct {
+	Name  string
+	Value any
+}
+
+func TestPublishSignals(t *testing.T) {
+	_, publisher, settings, error := GetBrokerConnections()
+	if error != nil {
+		t.Error(error)
+	}
+
+	writerChannel := make(chan valueChannel, 1)
+	go func() {
+		for {
+			val := &valueChannel{
+				Name:  "Vehicle.Body.Lights.IsLeftIndicatorOn",
+				Value: true,
+			}
+			writerChannel <- *val
+			time.Sleep(time.Second * 3)
+		}
+	}()
+
+	for i := 0; i < 5; i++ {
+		pub_val := <-writerChannel
+		PublishSignals(pub_val.Name, pub_val.Value, settings.Conf.NameSpaces[0], publisher)
+		log.Info("publishing ", pub_val.Name)
+	}
+
 }

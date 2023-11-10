@@ -272,7 +272,7 @@ func PublishSignals(signame string, sigvalue any, namespace string, serviceClien
 		}
 		break
 	}
-	pubsignal.Raw = sigvalue.([]byte)
+	// pubsignal.Raw = sigvalue.([]byte) TODO discuss how to handle frame publishing
 
 	var signals []*base.Signal
 	signals = append(signals, pubsignal)
