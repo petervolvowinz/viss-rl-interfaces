@@ -250,6 +250,8 @@ func StartStreaming(connection base.NetworkServiceClient, grpc_settings *GRPCBro
 
 func PublishSignals(signame string, sigvalue any, namespace string, serviceClient base.NetworkServiceClient) {
 
+	log.Println("publishing: ", signame)
+
 	signalId := GetSignalId(signame, namespace)
 	pubsignal := &base.Signal{
 		Id: signalId,
