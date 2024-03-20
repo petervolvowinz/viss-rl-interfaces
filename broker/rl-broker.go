@@ -17,6 +17,7 @@ import (
 	"net"
 	"os"
 	"sync"
+	"time"
 )
 
 type Configuration struct {
@@ -240,12 +241,21 @@ func StartStreaming(connection base.NetworkServiceClient, grpc_settings *GRPCBro
 	// subscription
 	subConfig := getSubSignals(&grpc_settings.Conf)
 	ctx := metadata.NewOutgoingContext(context.Background(), grpc_settings.Md)
-	response, err := connection.SubscribeToSignals(ctx, subConfig)
-	if err != nil {
+	for {
+		response, err := connection.SubscribeToSignals(ctx, subConfig)
+		if err != nil {
+			log.Debug("did not connect ", err)
+			log.Debug("retrying in 5 seconds")
+			time.Sleep(5 * time.Second)
+		}
+		return response, nil
+	}
+
+	/*if err != nil {
 		log.Debug("did not connect ", err)
 		return nil, err
 	}
-	return response, nil
+	return response, nil*/
 }
 
 func PublishSignals(signame string, sigvalue any, namespace string, serviceClient base.NetworkServiceClient) {
