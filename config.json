@@ -7,7 +7,7 @@
   "client_id" : "pw-go-client",
   "api_key": "",
   "vss_tree_path": "../vss/vss-flat-json/normalized-json/vss_n.json",
-  "signalfilter": ["Vehicle.Speed","Vehicle.CurrentLocation.Latitude","Vehicle.CurrentLocation.Longitude"],
+  "signalfilter": ["Vehicle.Speed"],
   "publish-separate-connection": "false",
   "publish_url": "",
   "publish_api-key": ""

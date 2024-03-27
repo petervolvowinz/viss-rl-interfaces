@@ -1,6 +1,6 @@
 module github.com/petervolvowinz/viss-rl-interfaces
 
-go 1.18
+go 1.22.1
 
 replace github.com/petervolvowinz/viss-rl-interfaces/broker => ./broker
 
